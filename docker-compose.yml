@@ -1,0 +1,115 @@
+#  ____    |__( )_________  __/__  /________      __
+# ____  /| |_  /__  ___/_  /_ __  /_  __ \_ | /| / /
+# ___  ___ |  / _  /   _  __/ _  / / /_/ /_ |/ |/ /
+#  _/_/  |_/_/  /_/    /_/    /_/  \____/____/|__/
+ 
+version: '3.1'
+services:
+
+    web:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                network: host
+        restart: always
+        depends_on:
+            - mysql
+        ports:
+            - "8080:8080"
+        links:
+            - mysql:mysql
+            - rabbitmq:rabbitmq
+            - worker:worker
+        volumes:
+            - "./dags:/usr/local/airflow/dags"
+            - "./packages:/usr/local/airflow/packages"
+        environment:
+            AIRFLOW_HOME: /usr/local/airflow
+        command: webserver
+
+
+    scheduler:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                network: host
+        restart: always
+        depends_on:
+            - mysql
+        links:
+            - mysql:mysql
+            - rabbitmq:rabbitmq    
+        volumes:
+            - "./dags:/usr/local/airflow/dags"
+            - "./packages:/usr/local/airflow/packages"
+        environment:
+            AIRFLOW_HOME: /usr/local/airflow
+        command: scheduler
+
+
+    worker:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                network: host
+        restart: always
+        depends_on:
+            - mysql
+        ports:
+            - "8793:8793"
+        links:
+            - mysql:mysql
+            - rabbitmq:rabbitmq
+        volumes:
+            - "./dags:/usr/local/airflow/dags"
+            - "./packages:/usr/local/airflow/packages"
+        environment:
+            AIRFLOW_HOME: /usr/local/airflow
+        command: worker
+
+
+    flower:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                network: host
+        restart: always
+        depends_on:
+            - mysql
+        environment:
+            AIRFLOW_HOME: /usr/local/airflow
+        ports:
+            - "5555:5555"
+        links:
+            - rabbitmq:rabbitmq
+        command: flower
+
+
+    rabbitmq:
+        image: rabbitmq:3-management
+        restart: always
+        expose:
+            - '15672'
+            - '5672'
+        environment:
+            RABBITMQ_DEFAULT_USER: airflow
+            RABBITMQ_DEFAULT_PASS: airflow
+            RABBITMQ_DEFAULT_VHOST: airflow
+
+
+    mysql:
+        image: mysql:5.7
+        restart: always
+        expose:
+            - '3306'
+        environment:
+            MYSQL_DATABASE: airflow
+            MYSQL_USER: airflow
+            MYSQL_PASSWORD: airflow
+            MYSQL_ROOT_PASSWORD: airflow
+        volumes:
+            - "./mysql/.data/db:/var/lib/mysql"
