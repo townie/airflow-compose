@@ -62,17 +62,18 @@ RUN pip3 install --upgrade pip \
 RUN ln -sf /usr/bin/python3 /usr/bin/python
 
 # Airflow configuration stuff
-ADD config/dev/entrypoint.sh ${AIRFLOW_HOME}/entrypoint.sh
-ADD config/dev/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
+ADD config/airflow/entrypoint.sh ${AIRFLOW_HOME}/entrypoint.sh
+ADD config/airflow/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
 RUN chown -R airflow: ${AIRFLOW_HOME} && \
     chmod +x ${AIRFLOW_HOME}/entrypoint.sh && \
     chown -R airflow: /tmp
 
-# Local development of packages
+# Incude import data
 ADD packages ${AIRFLOW_HOME}/packages
 ADD scripts  ${AIRFLOW_HOME}/scripts
-RUN bash ${AIRFLOW_HOME}/scripts/local_dev.sh
+ADD plugins ${AIRFLOW_HOME}/plugins
+
 
 # Airflow RunTime Configs
 USER airflow

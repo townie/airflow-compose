@@ -22,6 +22,7 @@ services:
             - rabbitmq:rabbitmq
             - worker:worker
         volumes:
+            - "./plugins:/usr/local/airflow/plugins"
             - "./dags:/usr/local/airflow/dags"
             - "./packages:/usr/local/airflow/packages"
         environment:
@@ -42,6 +43,7 @@ services:
             - mysql:mysql
             - rabbitmq:rabbitmq    
         volumes:
+            - "./plugins:/usr/local/airflow/plugins"
             - "./dags:/usr/local/airflow/dags"
             - "./packages:/usr/local/airflow/packages"
         environment:
@@ -64,6 +66,7 @@ services:
             - mysql:mysql
             - rabbitmq:rabbitmq
         volumes:
+            - "./plugins:/usr/local/airflow/plugins"
             - "./dags:/usr/local/airflow/dags"
             - "./packages:/usr/local/airflow/packages"
         environment:
@@ -92,8 +95,8 @@ services:
     rabbitmq:
         image: rabbitmq:3-management
         restart: always
-        expose:
-            - '15672'
+        ports:
+            - '15672:15672'
             - '5672'
         environment:
             RABBITMQ_DEFAULT_USER: airflow

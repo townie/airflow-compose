@@ -6,8 +6,15 @@ echo "********** Stopping Services **********"
 docker-compose down
 
 echo "********** Removing MySql Data **********"
+echo 
 
-sudo rm -rf mysql/.data
+read -t 3 -p "Delete Database(N/y):" DELETE_DATA
+
+if [ $DELETE_DATA == 'y' ]
+then
+	echo "Say good bye to your data"
+	sudo rm -rf mysql/.data
+fi
 
 echo "********** Development Repos **********"
 
@@ -24,7 +31,7 @@ sleep 10
 # docker-compose exec product_service  python manage.py db upgrade
 
 echo "********** Creating Admin User  **********"
-docker-compose exec worker python scripts/reset_create_admin.py
+docker-compose exec worker python scripts/create_admin.py
 
 
 echo "********** Reset Completed  **********"
